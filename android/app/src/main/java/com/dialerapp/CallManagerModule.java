@@ -3,7 +3,10 @@ package com.dialerapp;
 import android.content.Intent;
 import android.net.Uri;
 import android.telecom.TelecomManager;
+import android.telecom.PhoneAccountHandle;
 import android.content.Context;
+import android.os.Bundle;
+import android.telephony.SubscriptionManager;
 
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -27,6 +30,29 @@ public class CallManagerModule extends ReactContextBaseJavaModule {
             Intent callIntent = new Intent(Intent.ACTION_CALL);
             callIntent.setData(Uri.parse("tel:" + phoneNumber));
             callIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            
+            if (getCurrentActivity() != null) {
+                getCurrentActivity().startActivity(callIntent);
+                promise.resolve(true);
+            } else {
+                promise.reject("NO_ACTIVITY", "No current activity available");
+            }
+        } catch (Exception e) {
+            promise.reject("CALL_ERROR", e.getMessage());
+        }
+    }
+
+    @ReactMethod
+    public void makeCallWithSim(String phoneNumber, int subscriptionId, Promise promise) {
+        try {
+            Intent callIntent = new Intent(Intent.ACTION_CALL);
+            callIntent.setData(Uri.parse("tel:" + phoneNumber));
+            callIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            
+            // Add subscription ID for dual SIM support
+            Bundle extras = new Bundle();
+            extras.putInt("subscription", subscriptionId);
+            callIntent.putExtras(extras);
             
             if (getCurrentActivity() != null) {
                 getCurrentActivity().startActivity(callIntent);

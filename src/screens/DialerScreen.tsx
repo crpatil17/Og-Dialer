@@ -4,13 +4,17 @@ import type React from "react"
 import { useState } from "react"
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from "react-native"
 import Icon from "react-native-vector-icons/MaterialIcons"
-import { CallManager } from "../native/CallManager"
+import CallManager from "../native/CallManager"
 import { useCall } from "../context/CallContext"
+import { useSim } from "../context/SimContext"
 import { useNavigation } from "@react-navigation/native"
+import SimSelectionModal from "../components/SimSelectionModal"
 
 const DialerScreen: React.FC = () => {
   const [phoneNumber, setPhoneNumber] = useState("")
+  const [showSimSelection, setShowSimSelection] = useState(false)
   const { startCall } = useCall()
+  const { simCards, isDualSim, selectSimForCall } = useSim()
   const navigation = useNavigation()
 
   const handleNumberPress = (digit: string) => {
@@ -25,8 +29,24 @@ const DialerScreen: React.FC = () => {
     if (phoneNumber.length === 0) return
 
     try {
+      if (isDualSim && simCards.length > 1) {
+        setShowSimSelection(true)
+      } else {
+        // Single SIM or no SIM selection needed
+        startCall(phoneNumber)
+        await CallManager.makeCall(phoneNumber)
+      }
+    } catch (error) {
+      Alert.alert("Error", "Failed to make call")
+      console.error("Call error:", error)
+    }
+  }
+
+  const handleSimSelection = async (selectedSim: any) => {
+    setShowSimSelection(false)
+    try {
       startCall(phoneNumber)
-      await CallManager.makeCall(phoneNumber)
+      await CallManager.makeCallWithSim(phoneNumber, selectedSim.subscriptionId)
     } catch (error) {
       Alert.alert("Error", "Failed to make call")
       console.error("Call error:", error)
@@ -44,9 +64,17 @@ const DialerScreen: React.FC = () => {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Dialer</Text>
-        <TouchableOpacity onPress={() => navigation.navigate("Demo")} style={styles.demoButton}>
-          <Icon name="play-circle-filled" size={24} color="#2196F3" />
-        </TouchableOpacity>
+        <View style={styles.headerActions}>
+          {isDualSim && (
+            <View style={styles.simIndicator}>
+              <Icon name="sim-card" size={16} color="#2196F3" />
+              <Text style={styles.simText}>{simCards.length} SIMs</Text>
+            </View>
+          )}
+          <TouchableOpacity onPress={() => navigation.navigate("Demo")} style={styles.demoButton}>
+            <Icon name="play-circle-filled" size={24} color="#2196F3" />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <View style={styles.numberDisplay}>
@@ -90,6 +118,14 @@ const DialerScreen: React.FC = () => {
           <Icon name="call" size={28} color="white" />
         </TouchableOpacity>
       </View>
+
+      <SimSelectionModal
+        visible={showSimSelection}
+        simCards={simCards}
+        phoneNumber={phoneNumber}
+        onSelectSim={handleSimSelection}
+        onCancel={() => setShowSimSelection(false)}
+      />
     </View>
   )
 }
@@ -100,6 +136,9 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
   },
   header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingTop: 50,
     paddingHorizontal: 16,
     paddingBottom: 16,
@@ -108,6 +147,28 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold",
     color: "#333",
+  },
+  headerActions: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  simIndicator: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#e3f2fd",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginRight: 8,
+  },
+  simText: {
+    fontSize: 12,
+    color: "#2196F3",
+    marginLeft: 4,
+    fontWeight: "500",
+  },
+  demoButton: {
+    padding: 8,
   },
   numberDisplay: {
     flexDirection: "row",
@@ -167,12 +228,6 @@ const styles = StyleSheet.create({
   },
   callButtonDisabled: {
     backgroundColor: "#ccc",
-  },
-  demoButton: {
-    position: "absolute",
-    right: 16,
-    top: 50,
-    padding: 8,
   },
 })
 

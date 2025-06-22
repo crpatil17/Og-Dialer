@@ -23,6 +23,10 @@ public class DialerPackage implements ReactPackage {
         modules.add(new CallManagerModule(reactContext));
         modules.add(new ContactManagerModule(reactContext));
         modules.add(new CallLogManagerModule(reactContext));
+        modules.add(new CallRecordingModule(reactContext));
+        modules.add(new CallerIdentificationModule(reactContext));
+        modules.add(new CallNotificationModule(reactContext));
+        modules.add(new SimManagerModule(reactContext));
         return modules;
     }
 }

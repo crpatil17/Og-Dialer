@@ -21,6 +21,7 @@ import InCallScreen from "./src/screens/InCallScreen"
 import CallRecordingScreen from "./src/screens/CallRecordingScreen"
 import AutoDialerScreen from "./src/screens/AutoDialerScreen"
 import DemoScreen from "./src/screens/DemoScreen"
+import SettingsScreen from "./src/screens/SettingsScreen"
 
 import { PermissionManager } from "./src/native/PermissionManager"
 import { CallProvider } from "./src/context/CallContext"
@@ -28,6 +29,7 @@ import { ContactProvider } from "./src/context/ContactContext"
 import { CallLogProvider } from "./src/context/CallLogContext"
 import { PrivacyProvider } from "./src/context/PrivacyContext"
 import { AutoDialerProvider } from "./src/context/AutoDialerContext"
+import { SimProvider } from "./src/context/SimContext"
 
 const Tab = createBottomTabNavigator()
 const Stack = createStackNavigator()
@@ -51,6 +53,9 @@ function TabNavigator() {
             case "Dialer":
               iconName = "dialpad"
               break
+            case "Settings":
+              iconName = "settings"
+              break
             default:
               iconName = "circle"
           }
@@ -65,6 +70,7 @@ function TabNavigator() {
       <Tab.Screen name="Recents" component={RecentsScreen} />
       <Tab.Screen name="Contacts" component={ContactsScreen} />
       <Tab.Screen name="Dialer" component={DialerScreen} />
+      <Tab.Screen name="Settings" component={SettingsScreen} />
     </Tab.Navigator>
   )
 }
@@ -99,39 +105,46 @@ export default function App() {
   return (
     <PrivacyProvider>
       <AutoDialerProvider>
-        <CallProvider>
-          <ContactProvider>
-            <CallLogProvider>
-              <NavigationContainer>
-                <StatusBar style="auto" />
-                <Stack.Navigator screenOptions={{ headerShown: false }}>
-                  <Stack.Screen name="Demo" component={DemoScreen} />
-                  <Stack.Screen name="Main" component={TabNavigator} />
-                  <Stack.Screen name="ContactDetail" component={ContactDetailScreen} />
-                  <Stack.Screen name="AddContact" component={AddContactScreen} />
-                  <Stack.Screen name="CallRecording" component={CallRecordingScreen} />
-                  <Stack.Screen name="AutoDialer" component={AutoDialerScreen} />
-                  <Stack.Screen
-                    name="IncomingCall"
-                    component={IncomingCallScreen}
-                    options={{ presentation: "fullScreenModal" }}
-                  />
-                  <Stack.Screen
-                    name="EnhancedIncomingCall"
-                    component={EnhancedIncomingCallScreen}
-                    options={{ presentation: "fullScreenModal" }}
-                  />
-                  <Stack.Screen
-                    name="OutgoingCall"
-                    component={OutgoingCallScreen}
-                    options={{ presentation: "fullScreenModal" }}
-                  />
-                  <Stack.Screen name="InCall" component={InCallScreen} options={{ presentation: "fullScreenModal" }} />
-                </Stack.Navigator>
-              </NavigationContainer>
-            </CallLogProvider>
-          </ContactProvider>
-        </CallProvider>
+        <SimProvider>
+          <CallProvider>
+            <ContactProvider>
+              <CallLogProvider>
+                <NavigationContainer>
+                  <StatusBar style="auto" />
+                  <Stack.Navigator screenOptions={{ headerShown: false }}>
+                    <Stack.Screen name="Demo" component={DemoScreen} />
+                    <Stack.Screen name="Main" component={TabNavigator} />
+                    <Stack.Screen name="ContactDetail" component={ContactDetailScreen} />
+                    <Stack.Screen name="AddContact" component={AddContactScreen} />
+                    <Stack.Screen name="CallRecording" component={CallRecordingScreen} />
+                    <Stack.Screen name="AutoDialer" component={AutoDialerScreen} />
+                    <Stack.Screen name="Settings" component={SettingsScreen} />
+                    <Stack.Screen
+                      name="IncomingCall"
+                      component={IncomingCallScreen}
+                      options={{ presentation: "fullScreenModal" }}
+                    />
+                    <Stack.Screen
+                      name="EnhancedIncomingCall"
+                      component={EnhancedIncomingCallScreen}
+                      options={{ presentation: "fullScreenModal" }}
+                    />
+                    <Stack.Screen
+                      name="OutgoingCall"
+                      component={OutgoingCallScreen}
+                      options={{ presentation: "fullScreenModal" }}
+                    />
+                    <Stack.Screen
+                      name="InCall"
+                      component={InCallScreen}
+                      options={{ presentation: "fullScreenModal" }}
+                    />
+                  </Stack.Navigator>
+                </NavigationContainer>
+              </CallLogProvider>
+            </ContactProvider>
+          </CallProvider>
+        </SimProvider>
       </AutoDialerProvider>
     </PrivacyProvider>
   )
